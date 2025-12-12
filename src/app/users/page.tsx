@@ -15,7 +15,7 @@ export default function UserList() {
 
   useEffect(() => {
     async function fetchUsers() {
-      const token = getCookie("access") ?? null;
+      const token = getCookie("access");
       const res = await api("/api/users/", "GET", null, token);
       setUsers(res);
     }

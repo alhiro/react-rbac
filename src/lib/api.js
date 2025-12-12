@@ -1,4 +1,12 @@
-export async function api(url, method = "GET", body = null, token = null) {
+/**
+ * @param {Object} params
+ * @param {string} params.url
+ * @param {string} [params.method]
+ * @param {any} [params.body]
+ * @param {string | undefined | null} [params.token]
+ */
+
+export async function api(url, method = "GET", body = null, token) {
   const options = { method, headers: { "Content-Type": "application/json" } };
 
   if (body) options.body = JSON.stringify(body);
