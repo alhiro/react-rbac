@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { jwtDecode as jwt_decode } from "jwt-decode";
+import { getCookie } from "@/lib/api";
 
 export default function NavMenu() {
   const [role, setRole] = useState('guest');
@@ -9,23 +10,29 @@ export default function NavMenu() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access');
+      const token = getCookie('access');
       if (token) {
         try {
           const payload = jwt_decode(token);
-          console.log(payload);
           const userRole = payload.role || 'guest';
-          setRole(userRole);
+          console.log(userRole);
+          setTimeout(() => setRole(userRole), 0);
         } catch (e) {
           console.error('Failed to decode token', e);
-          setRole('guest');
+          setTimeout(() => setRole('guest'), 0);
         }
       } else {
-        setRole('guest');
+        setTimeout(() => setRole('guest'), 0);
       }
     }
-    setLoaded(true);
+    setTimeout(() => setLoaded(true), 0);
   }, []);
+
+  function logout() {
+    document.cookie = "access=; path=/; max-age=0";
+    document.cookie = "refresh=; path=/; max-age=0";
+    window.location.href = "/login";
+  }
 
   const menu = {
     guest: [
@@ -46,9 +53,9 @@ export default function NavMenu() {
     ],
   };
 
-  const items = menu[role] || menu.guest;
+  if (!loaded || role === 'guest') return null;
 
-  if (!loaded) return null;
+  const items = menu[role] || menu.guest;
 
   return (
     <nav className="p-4 bg-gray-200 flex gap-4">
@@ -57,6 +64,13 @@ export default function NavMenu() {
           {m.name}
         </a>
       ))}
+
+      <button
+          onClick={logout}
+          className="text-red-600 ml-auto px-2 py-1 border rounded hover:bg-red-100"
+        >
+          Logout
+      </button>
     </nav>
   );
 }

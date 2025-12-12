@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { api } from "@/lib/api";
+import { api, getCookie } from "@/lib/api";
 
 export default function InvitationsPage() {
   const [form, setForm] = useState({ email: "", role: "staff" });
@@ -8,10 +8,27 @@ export default function InvitationsPage() {
 
   async function submit(e) {
     e.preventDefault();
-    const token = localStorage.getItem("access");
-
-    const res = await api("/api/invitations/create/", "POST", form, token);
-    setMsg(JSON.stringify(res));
+  
+    const token = getCookie("access");
+  
+    if (!token) {
+      setMsg("You are not authenticated. Please login.");
+      return;
+    }
+  
+    try {
+      const res = await api(
+        "/api/invitations/",
+        "POST",
+        form,
+        token 
+      );
+  
+      setMsg(res.detail || res);
+    } catch (err) {
+      console.error(err);
+      setMsg("Failed to create invitation.");
+    }
   }
 
   return (
@@ -34,7 +51,25 @@ export default function InvitationsPage() {
         <button className="bg-blue-600 text-white p-2 w-full">Kirim Undangan</button>
       </form>
 
-      <p className="mt-3">{msg}</p>
+      {msg && (
+        <div className="mt-3 text-red-500">
+          {msg.accept_url_demo ? (
+            <p>
+              You have been invited!{' '}
+              <a
+                href={msg.accept_url_demo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                Accept Invitation
+              </a>
+            </p>
+          ) : (
+            <p>{msg}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
